@@ -3,6 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
+import { Toaster } from '@/components/ui/sonner'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -27,6 +28,7 @@ export default function RootLayout({
       style={{ colorScheme: 'dark' }}
     >
       <body>
+        <Toaster />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
