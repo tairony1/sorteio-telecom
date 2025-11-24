@@ -13,11 +13,28 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { clearAuthCookie } from '@/lib/auth'
 import { useAuthStore } from '@/store/auth'
 
 export function CompanyDropdown() {
   const router = useRouter()
-  const logout = useAuthStore((s) => s.logout)
+
+  const logout = async () => {
+    try {
+      const res = await fetch('/api/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!res.ok) {
+        return
+      }
+
+      router.replace('/')
+    } catch (err: any) {
+      console.log('Falha ao efetuar logout')
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -39,14 +56,7 @@ export function CompanyDropdown() {
             <DropdownMenuItem>Trocar organização</DropdownMenuItem>
             <DropdownMenuItem>Configurações</DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => {
-                logout()
-                router.replace('/') // equivalente ao navigate("/", { replace: true })
-              }}
-            >
-              Sair
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>Sair</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

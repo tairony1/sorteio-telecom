@@ -16,13 +16,13 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { NavLink } from '../NavLink'
-import { CompanyDropdown } from './SidebarCompany'
-import { UserDropdown } from './SidebarUser'
+import { CompanyDropdown } from './sidebar-copany'
+import { UserDropdown } from './sidebar-user'
 
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Sorteios', url: '/sorteios', icon: Trophy },
-  { title: 'Criar Sorteio', url: '/ciar-sorteio', icon: Plus },
+  { title: 'Criar Sorteio', url: '/criar-sorteio', icon: Plus },
   { title: 'Configurações', url: '/settings', icon: Settings },
 ]
 

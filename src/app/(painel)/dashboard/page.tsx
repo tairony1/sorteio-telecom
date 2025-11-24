@@ -1,6 +1,6 @@
 import { Ticket, TrendingUp, Trophy, Users } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DashboardLayout } from '@/layouts/DashboardLayout'
+import { DashboardLayout } from '@/layouts/dashboard-layout'
 
 // import {
 //   BarChart,
@@ -66,46 +66,42 @@ const COLORS = [
 
 export default function Dashboard() {
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
-          <p className="text-muted-foreground">
-            Visão geral do sistema de sorteios
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
+        <p className="text-muted-foreground">
+          Visão geral do sistema de sorteios
+        </p>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {statsData.map((stat) => (
-            <Card
-              key={stat.title}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-foreground">
-                  {stat.value}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Charts */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Monthly Activity Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Atividade Mensal</CardTitle>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {statsData.map((stat) => (
+          <Card key={stat.title} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
+              </CardTitle>
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </CardHeader>
             <CardContent>
-              {/* <ResponsiveContainer width="100%" height={300}>
+              <div className="text-3xl font-bold text-foreground">
+                {stat.value}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Monthly Activity Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Atividade Mensal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="mes" stroke="hsl(var(--muted-foreground))" />
@@ -122,16 +118,16 @@ export default function Dashboard() {
                   <Bar dataKey="participantes" fill="hsl(var(--chart-2))" name="Participantes" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer> */}
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
 
-          {/* Device Access Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Acesso por Dispositivo</CardTitle>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              {/* <ResponsiveContainer width="100%" height={300}>
+        {/* Device Access Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Acesso por Dispositivo</CardTitle>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            {/* <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={accessData}
@@ -164,49 +160,48 @@ export default function Dashboard() {
                   />
                 </PieChart>
               </ResponsiveContainer> */}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Atividades Recentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  text: "Novo sorteio 'Prêmio de Verão' criado",
-                  time: 'Há 2 horas',
-                },
-                {
-                  text: 'Cliente João Silva resgatou 5 tickets',
-                  time: 'Há 3 horas',
-                },
-                {
-                  text: "Sorteio 'Natal Especial' finalizado",
-                  time: 'Há 5 horas',
-                },
-                {
-                  text: '50 novos participantes registrados',
-                  time: 'Há 1 dia',
-                },
-              ].map((activity, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between border-b border-border pb-3 last:border-0"
-                >
-                  <p className="text-sm text-foreground">{activity.text}</p>
-                  <span className="text-xs text-muted-foreground">
-                    {activity.time}
-                  </span>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Atividades Recentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              {
+                text: "Novo sorteio 'Prêmio de Verão' criado",
+                time: 'Há 2 horas',
+              },
+              {
+                text: 'Cliente João Silva resgatou 5 tickets',
+                time: 'Há 3 horas',
+              },
+              {
+                text: "Sorteio 'Natal Especial' finalizado",
+                time: 'Há 5 horas',
+              },
+              {
+                text: '50 novos participantes registrados',
+                time: 'Há 1 dia',
+              },
+            ].map((activity, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between border-b border-border pb-3 last:border-0"
+              >
+                <p className="text-sm text-foreground">{activity.text}</p>
+                <span className="text-xs text-muted-foreground">
+                  {activity.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
