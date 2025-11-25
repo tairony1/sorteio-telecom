@@ -49,9 +49,27 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const mockPremiacoes = [
-  { posicao: '1º Lugar', descricao: 'Carro 0km', valor: 'R$ 80.000,00', icon: Trophy, color: 'text-prize-gold' },
-  { posicao: '2º Lugar', descricao: 'Motocicleta 0km', valor: 'R$ 25.000,00', icon: Award, color: 'text-prize-silver' },
-  { posicao: '3º Lugar', descricao: 'Smart TV 65"', valor: 'R$ 5.000,00', icon: Medal, color: 'text-prize-bronze' },
+  {
+    posicao: '1º Lugar',
+    descricao: 'Carro 0km',
+    valor: 'R$ 80.000,00',
+    icon: Trophy,
+    color: 'text-prize-gold',
+  },
+  {
+    posicao: '2º Lugar',
+    descricao: 'Motocicleta 0km',
+    valor: 'R$ 25.000,00',
+    icon: Award,
+    color: 'text-prize-silver',
+  },
+  {
+    posicao: '3º Lugar',
+    descricao: 'Smart TV 65"',
+    valor: 'R$ 5.000,00',
+    icon: Medal,
+    color: 'text-prize-bronze',
+  },
 ]
 
 export default function SorteioClient({ id }: { id: string }) {
@@ -65,8 +83,16 @@ export default function SorteioClient({ id }: { id: string }) {
     { numero: string; resgatado: boolean; participante: string | null }[]
   >([])
 
-  const [winners, setWinners] = useState({ primeiro: '', segundo: '', terceiro: '' })
-  const [tempWinners, setTempWinners] = useState({ primeiro: '', segundo: '', terceiro: '' })
+  const [winners, setWinners] = useState({
+    primeiro: '',
+    segundo: '',
+    terceiro: '',
+  })
+  const [tempWinners, setTempWinners] = useState({
+    primeiro: '',
+    segundo: '',
+    terceiro: '',
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const itemsPerPage = 100
@@ -76,7 +102,10 @@ export default function SorteioClient({ id }: { id: string }) {
       Array.from({ length: 250 }, (_, i) => ({
         numero: String(i + 1).padStart(5, '0'),
         resgatado: Math.random() > 0.5,
-        participante: Math.random() > 0.5 ? `Participante ${Math.floor(Math.random() * 50)}` : null,
+        participante:
+          Math.random() > 0.5
+            ? `Participante ${Math.floor(Math.random() * 50)}`
+            : null,
       }))
     )
   }, [])
@@ -100,23 +129,39 @@ export default function SorteioClient({ id }: { id: string }) {
   const filteredTickets = useMemo(() => {
     return mockTickets.filter((ticket) => {
       const num = ticket.numero.includes(searchTerm)
-      const part = ticket.participante?.toLowerCase().includes(searchTerm.toLowerCase())
+      const part = ticket.participante
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
       return num || part
     })
   }, [searchTerm, mockTickets])
 
   const totalPages = Math.ceil(filteredTickets.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const currentTickets = filteredTickets.slice(startIndex, startIndex + itemsPerPage)
+  const currentTickets = filteredTickets.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  )
 
   const handleConcluirSorteio = () => {
-    if (!tempWinners.primeiro || !tempWinners.segundo || !tempWinners.terceiro) {
-      toast('Erro', { description: 'Por favor, informe todos os números vencedores.' })
+    if (
+      !tempWinners.primeiro ||
+      !tempWinners.segundo ||
+      !tempWinners.terceiro
+    ) {
+      toast('Erro', {
+        description: 'Por favor, informe todos os números vencedores.',
+      })
       return
     }
 
-    if (new Set([tempWinners.primeiro, tempWinners.segundo, tempWinners.terceiro]).size !== 3) {
-      toast('Erro', { description: 'Os números vencedores devem ser diferentes.' })
+    if (
+      new Set([tempWinners.primeiro, tempWinners.segundo, tempWinners.terceiro])
+        .size !== 3
+    ) {
+      toast('Erro', {
+        description: 'Os números vencedores devem ser diferentes.',
+      })
       return
     }
 
@@ -124,7 +169,9 @@ export default function SorteioClient({ id }: { id: string }) {
     setIsCompleted(true)
     setDialogOpen(false)
 
-    toast('Sorteio Concluído', { description: 'Os vencedores foram registrados com sucesso!' })
+    toast('Sorteio Concluído', {
+      description: 'Os vencedores foram registrados com sucesso!',
+    })
   }
 
   const getWinnerInfo = (ticketNumber: string) => {
@@ -136,14 +183,21 @@ export default function SorteioClient({ id }: { id: string }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/sorteios')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push('/sorteios')}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">{sorteio.titulo}</h2>
+            <h2 className="text-2xl font-semibold">{sorteio.titulo}</h2>
             <p className="text-muted-foreground">
               Sorteio #{sorteio.id}
-              <Badge variant={isCompleted ? 'secondary' : 'default'} className="ml-2">
+              <Badge
+                variant={isCompleted ? 'secondary' : 'default'}
+                className="ml-2"
+              >
                 {isCompleted ? 'Concluído' : 'Ativo'}
               </Badge>
             </p>
@@ -162,7 +216,9 @@ export default function SorteioClient({ id }: { id: string }) {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Concluir Sorteio</DialogTitle>
-                <DialogDescription>Informe os números vencedores.</DialogDescription>
+                <DialogDescription>
+                  Informe os números vencedores.
+                </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 py-4">
@@ -173,7 +229,12 @@ export default function SorteioClient({ id }: { id: string }) {
                       placeholder="Ex: 00123"
                       value={(tempWinners as any)[pos]}
                       maxLength={5}
-                      onChange={(e) => setTempWinners({ ...tempWinners, [pos]: e.target.value })}
+                      onChange={(e) =>
+                        setTempWinners({
+                          ...tempWinners,
+                          [pos]: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 ))}
@@ -207,7 +268,9 @@ export default function SorteioClient({ id }: { id: string }) {
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sorteio.ticketsResgatados} / {sorteio.totalTickets}</div>
+            <div className="text-2xl font-bold">
+              {sorteio.ticketsResgatados} / {sorteio.totalTickets}
+            </div>
           </CardContent>
         </Card>
 
@@ -251,10 +314,18 @@ export default function SorteioClient({ id }: { id: string }) {
                   </div>
 
                   <div className="flex gap-1 border rounded-md">
-                    <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}>
+                    <Button
+                      variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      onClick={() => setViewMode('grid')}
+                    >
                       <Grid className="h-4 w-4" />
                     </Button>
-                    <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('list')}>
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      onClick={() => setViewMode('list')}
+                    >
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
@@ -266,17 +337,26 @@ export default function SorteioClient({ id }: { id: string }) {
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {currentTickets.map((ticket) => (
-                    <div key={ticket.numero} className={`p-4 rounded-lg border-2 ${ticket.resgatado ? 'border-primary bg-primary/10' : 'border-muted bg-muted/30'}`}>
+                    <div
+                      key={ticket.numero}
+                      className={`p-4 rounded-lg border-2 ${ticket.resgatado ? 'border-primary bg-primary/10' : 'border-muted bg-muted/30'}`}
+                    >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between">
-                          <span className="font-bold text-lg">#{ticket.numero}</span>
-                          <Badge variant={ticket.resgatado ? 'default' : 'secondary'}>
+                          <span className="font-bold text-lg">
+                            #{ticket.numero}
+                          </span>
+                          <Badge
+                            variant={ticket.resgatado ? 'default' : 'secondary'}
+                          >
                             {ticket.resgatado ? 'Resgatado' : 'Livre'}
                           </Badge>
                         </div>
 
                         {ticket.participante && (
-                          <p className="text-xs text-muted-foreground truncate">{ticket.participante}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {ticket.participante}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -295,13 +375,19 @@ export default function SorteioClient({ id }: { id: string }) {
                   <TableBody>
                     {currentTickets.map((ticket) => (
                       <TableRow key={ticket.numero}>
-                        <TableCell className="font-bold">#{ticket.numero}</TableCell>
+                        <TableCell className="font-bold">
+                          #{ticket.numero}
+                        </TableCell>
                         <TableCell>
-                          <Badge variant={ticket.resgatado ? 'default' : 'secondary'}>
+                          <Badge
+                            variant={ticket.resgatado ? 'default' : 'secondary'}
+                          >
                             {ticket.resgatado ? 'Resgatado' : 'Livre'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{ticket.participante || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {ticket.participante || '-'}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -314,18 +400,29 @@ export default function SorteioClient({ id }: { id: string }) {
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
-                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                          className={currentPage === 1 ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
+                          className={
+                            currentPage === 1
+                              ? 'opacity-50 pointer-events-none'
+                              : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
 
                       {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                        const page = currentPage <= 3 ? i + 1 : currentPage - 2 + i
+                        const page =
+                          currentPage <= 3 ? i + 1 : currentPage - 2 + i
                         if (page > totalPages) return null
 
                         return (
                           <PaginationItem key={page}>
-                            <PaginationLink onClick={() => setCurrentPage(page)} isActive={page === currentPage} className="cursor-pointer">
+                            <PaginationLink
+                              onClick={() => setCurrentPage(page)}
+                              isActive={page === currentPage}
+                              className="cursor-pointer"
+                            >
                               {page}
                             </PaginationLink>
                           </PaginationItem>
@@ -340,8 +437,14 @@ export default function SorteioClient({ id }: { id: string }) {
 
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                          className={currentPage === totalPages ? 'opacity-50 pointer-events-none' : 'cursor-pointer'}
+                          onClick={() =>
+                            setCurrentPage((p) => Math.min(totalPages, p + 1))
+                          }
+                          className={
+                            currentPage === totalPages
+                              ? 'opacity-50 pointer-events-none'
+                              : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -355,7 +458,12 @@ export default function SorteioClient({ id }: { id: string }) {
         <TabsContent value="premiacoes" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             {mockPremiacoes.map((premio, index) => {
-              const winnerNumber = index === 0 ? winners.primeiro : index === 1 ? winners.segundo : winners.terceiro
+              const winnerNumber =
+                index === 0
+                  ? winners.primeiro
+                  : index === 1
+                    ? winners.segundo
+                    : winners.terceiro
 
               return (
                 <Card key={index}>
@@ -369,21 +477,31 @@ export default function SorteioClient({ id }: { id: string }) {
                   <CardContent className="pt-6 space-y-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Prêmio</p>
-                      <p className="text-lg font-semibold">{premio.descricao}</p>
+                      <p className="text-lg font-semibold">
+                        {premio.descricao}
+                      </p>
                     </div>
 
                     <div>
                       <p className="text-sm text-muted-foreground">Valor</p>
-                      <p className="text-xl font-bold text-primary">{premio.valor}</p>
+                      <p className="text-xl font-bold text-primary">
+                        {premio.valor}
+                      </p>
                     </div>
 
                     {isCompleted && (
                       <div className="pt-4 border-t">
-                        <p className="text-sm text-muted-foreground mb-2">Ticket Vencedor</p>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Ticket Vencedor
+                        </p>
 
                         <div className="bg-primary/10 border-2 border-primary rounded-lg p-4">
-                          <p className="text-2xl font-bold text-center text-primary">#{winnerNumber}</p>
-                          <p className="text-sm text-center text-muted-foreground mt-2">{getWinnerInfo(winnerNumber)}</p>
+                          <p className="text-2xl font-bold text-center text-primary">
+                            #{winnerNumber}
+                          </p>
+                          <p className="text-sm text-center text-muted-foreground mt-2">
+                            {getWinnerInfo(winnerNumber)}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -398,7 +516,9 @@ export default function SorteioClient({ id }: { id: string }) {
               <CardContent className="pt-6 text-center">
                 <Trophy className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="text-lg font-medium">Sorteio em andamento</p>
-                <p className="text-sm text-muted-foreground">Os vencedores aparecerão aqui quando o sorteio for concluído.</p>
+                <p className="text-sm text-muted-foreground">
+                  Os vencedores aparecerão aqui quando o sorteio for concluído.
+                </p>
               </CardContent>
             </Card>
           )}

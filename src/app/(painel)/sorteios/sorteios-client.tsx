@@ -83,7 +83,9 @@ export default function SorteiosClient() {
       <>
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Sorteios</h2>
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
+              Sorteios
+            </h2>
             <p className="text-muted-foreground">Carregando sorteios...</p>
           </div>
           <Button asChild className="gap-2">
@@ -99,7 +101,9 @@ export default function SorteiosClient() {
             <CardTitle>Lista de Sorteios</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="py-12 text-center text-muted-foreground">Carregando...</div>
+            <div className="py-12 text-center text-muted-foreground">
+              Carregando...
+            </div>
           </CardContent>
         </Card>
       </>
@@ -110,8 +114,12 @@ export default function SorteiosClient() {
     <>
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-foreground mb-2">Sorteios</h2>
-          <p className="text-muted-foreground">Gerencie todos os sorteios cadastrados</p>
+          <h2 className="text-2xl font-semibold text-foreground mb-2">
+            Sorteios
+          </h2>
+          <p className="text-muted-foreground">
+            Gerencie todos os sorteios cadastrados
+          </p>
         </div>
         <Button asChild className="gap-2">
           <Link href="/criar-sorteio">
@@ -179,7 +187,11 @@ export default function SorteiosClient() {
                       <Button variant="ghost" size="icon">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(sorteio.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(sorteio.id)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -195,16 +207,25 @@ export default function SorteiosClient() {
                 <PaginationItem>
                   <PaginationPrevious
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    className={
+                      currentPage === 1
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
                   />
                 </PaginationItem>
 
                 {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                  const pageNumber = currentPage <= 3 ? i + 1 : currentPage - 2 + i
+                  const pageNumber =
+                    currentPage <= 3 ? i + 1 : currentPage - 2 + i
                   if (pageNumber > totalPages) return null
                   return (
                     <PaginationItem key={pageNumber}>
-                      <PaginationLink onClick={() => setCurrentPage(pageNumber)} isActive={currentPage === pageNumber} className="cursor-pointer">
+                      <PaginationLink
+                        onClick={() => setCurrentPage(pageNumber)}
+                        isActive={currentPage === pageNumber}
+                        className="cursor-pointer"
+                      >
                         {pageNumber}
                       </PaginationLink>
                     </PaginationItem>
@@ -219,8 +240,14 @@ export default function SorteiosClient() {
 
                 <PaginationItem>
                   <PaginationNext
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    className={
+                      currentPage === totalPages
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
