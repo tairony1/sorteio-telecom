@@ -10,7 +10,7 @@ import {
   Shuffle,
   X,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -88,7 +88,11 @@ type FormValues = {
 }
 
 // ---------------- Component ----------------
-export default function CriarSorteioForm() {
+
+export default function EditarSorteioForm() {
+  const params = useParams()
+  const [sorteioId, setSorteioId] = useState(params.id)
+
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const steps = [
@@ -183,15 +187,60 @@ export default function CriarSorteioForm() {
   const premio2FotoRef = useRef<HTMLInputElement>(null)
   const premio3FotoRef = useRef<HTMLInputElement>(null)
 
+  // quando montar, obter dados do backend e popular form
   useEffect(() => {
-    // cleanup on unmount -> revoke all
+    let mounted = true
+    const fetchData = async () => {
+      try {
+        const { data, status } = await api.get(`/sorteio/${sorteioId}`)
+        console.log(`GET /sorteio/${sorteioId}`, data)
+
+        if (!mounted) return
+        if (status !== 200) {
+          toast.error('Erro ao buscar dados do sorteio')
+          return
+        }
+
+        // popula campos (ajuste nomes conforme GET)
+        setValue('titulo' as any, data.titulo || '')
+        setValue('descricao' as any, data.descricao || '')
+        setValue('short' as any, data.short || '')
+        setValue('data' as any, data.data || '')
+        setDate(data.data)
+        setValue('totalBilhetes' as any, String(data.total_bilhetes || '10'))
+        setValue(
+          'bilhetesPorParticipante' as any,
+          Number(data.bilhetes_participante || 1)
+        )
+        setValue('bilhetesEntrega' as any, data.bilhetes_entrega || '1')
+        setValue('regras' as any, data.regras || '')
+
+        // premios: preencher campos e previews (fotoUrl)
+        for (const key of ['premio1', 'premio2', 'premio3'] as const) {
+          const p = data.premios?.[key] || {}
+          setValue(`premios.${key}.titulo` as any, p.titulo || '')
+          setValue(`premios.${key}.descricao` as any, p.descricao || '')
+          setValue(`premios.${key}.status` as any, Boolean(p.status))
+          if (p.fotoUrl) {
+            setPreviews((prev) => ({ ...prev, [key]: p.fotoUrl }))
+            // guarda também campo para informar ao backend caso o arquivo não seja substituído
+            // (o backend espera premioN_foto_existente — adicionaremos isso no submit)
+          }
+        }
+
+        toast.success('Dados carregados para edição')
+      } catch (err: any) {
+        console.error(err)
+        toast.error('Erro ao carregar dados do sorteio')
+      }
+    }
+
+    fetchData()
     return () => {
-      Object.values(previews).forEach((url) => {
-        if (url) URL.revokeObjectURL(url)
-      })
+      mounted = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [sorteioId])
 
   // salva arquivo (o primeiro arquivo) no react-hook-form e cria preview
   const handleFileChange = (fieldPath: string, files: FileList | null) => {
@@ -284,7 +333,7 @@ export default function CriarSorteioForm() {
   }
 
   const onSubmit: SubmitHandler<FormValues> = async (formData) => {
-    // validação manual
+    // validação (usa a mesma validateForm do criar-sorteio-form)
     const errorsList = validateForm(formData)
     if (errorsList.length > 0) {
       const preview = errorsList.slice(0, 5).join(' \n ')
@@ -300,19 +349,13 @@ export default function CriarSorteioForm() {
     }
 
     try {
-      // montar FormData para enviar (multipart)
       const form = new FormData()
       form.append('titulo', formData.titulo)
       if (formData.descricao) form.append('descricao', formData.descricao)
       form.append('short', formData.short)
       form.append('data', formData.data)
-
-      const total =
-        typeof formData.totalBilhetes === 'string'
-          ? Number(formData.totalBilhetes)
-          : formData.totalBilhetes
-      if (total !== undefined) form.append('total_bilhetes', String(total))
-
+      if (formData.totalBilhetes !== undefined)
+        form.append('total_bilhetes', String(formData.totalBilhetes))
       form.append(
         'bilhetes_participante',
         String(formData.bilhetesPorParticipante)
@@ -320,7 +363,7 @@ export default function CriarSorteioForm() {
       form.append('bilhetes_entrega', String(Number(formData.bilhetesEntrega)))
       if (formData.regras) form.append('regras', formData.regras)
 
-      // premios
+      // premios: se não enviou novo arquivo para um prêmio, envia campo premioN_foto_existente
       for (const key of ['premio1', 'premio2', 'premio3'] as const) {
         const p = (formData as any).premios[key] as Premio | undefined
         form.append(`${key}_status`, String(Boolean(p?.status)))
@@ -328,22 +371,26 @@ export default function CriarSorteioForm() {
         if (p?.descricao) form.append(`${key}_descricao`, String(p.descricao))
         if (p?.foto && p.foto instanceof File) {
           form.append(`${key}_foto`, p.foto, p.foto.name)
+        } else {
+          // se preview existe, enviar campo de foto existente para backend manter a imagem
+          if (previews[key]) {
+            form.append(`${key}_foto_existente`, previews[key] as string)
+          }
         }
       }
 
-      const { data, status } = await api.post('/sorteio', form)
-      console.log('POST /api/sorteio', status, data)
-
-      if (status === 201) {
-        toast.success('Sorteio criado com sucesso!', {
-          description: 'O sorteio foi cadastrado e está ativo.',
-          action: { label: <X size={20} />, onClick: () => {} },
+      console.log('zz1')
+      const { data, status } = await api.patch(`/sorteio/${sorteioId}`, form)
+      console.log('zz2', data, status)
+      if (status === 200) {
+        toast.success('Sorteio atualizado com sucesso!', {
+          description: 'Alterações salvas.',
         })
-        router.push('/sorteios')
+        // router.push('/sorteios')
         return
       }
 
-      toast.error('Erro ao criar sorteio')
+      toast.error('Erro ao editar sorteio')
     } catch (err: any) {
       console.error(err)
       const res = err?.response?.data || {}
@@ -501,7 +548,7 @@ export default function CriarSorteioForm() {
                       id="date"
                       className="w-48 justify-between font-normal"
                     >
-                      {date ? date.toLocaleDateString() : 'Selecione a data'}
+                      {formatOnlyDate(date) || 'Selecione a data'}
                       <ChevronDown className="ml-2" />
                     </Button>
                   </PopoverTrigger>
