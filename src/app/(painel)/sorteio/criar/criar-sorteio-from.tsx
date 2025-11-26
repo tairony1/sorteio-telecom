@@ -1,15 +1,17 @@
 'use client'
 
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Copy,
   Info,
   Save,
+  Shuffle,
   X,
-  ChevronDown,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,6 +25,13 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '@/components/ui/input-group'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from '@/components/ui/item'
 import { Label } from '@/components/ui/label'
 // imports shadcn para date picker (ajuste paths se necessário)
 import {
@@ -48,6 +57,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { api } from '@/services/api'
+
+const BASE_URL_SHORT =
+  process.env.NEXT_PUBLIC_BASE_URL_SHORT || 'https://meusite.com/'
 
 // ---------------- Types (sem ZOD) ----------------
 type Premio = {
@@ -64,7 +77,7 @@ type FormValues = {
   data: string
   totalBilhetes?: string | number | undefined
   bilhetesPorParticipante: number
-  entregaBilhetes: '1' | '2'
+  bilhetesEntrega: '1' | '2'
   premios: {
     premio1: Premio
     premio2: Premio
@@ -74,7 +87,7 @@ type FormValues = {
 }
 
 // ---------------- Component ----------------
-export default function CriarSorteioClient() {
+export default function CriarSorteioForm() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const steps = [
@@ -102,7 +115,7 @@ export default function CriarSorteioClient() {
       data: '',
       totalBilhetes: '10',
       bilhetesPorParticipante: 5,
-      entregaBilhetes: '1',
+      bilhetesEntrega: '1',
       premios: {
         premio1: { status: true, titulo: '', descricao: '', foto: null },
         premio2: { status: false, titulo: '', descricao: '', foto: null },
@@ -158,6 +171,10 @@ export default function CriarSorteioClient() {
     premio2: null,
     premio3: null,
   })
+
+  const premio1FotoRef = useRef<HTMLInputElement>(null)
+  const premio2FotoRef = useRef<HTMLInputElement>(null)
+  const premio3FotoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // cleanup on unmount -> revoke all
@@ -250,18 +267,18 @@ export default function CriarSorteioClient() {
       setError('bilhetesPorParticipante' as any, { type: 'manual', message: m })
     }
 
-    if (!['1', '2'].includes(values.entregaBilhetes)) {
+    if (!['1', '2'].includes(values.bilhetesEntrega)) {
       const m = 'Escolha a ordem de entrega dos bilhetes.'
       msgs.push(m)
-      setError('entregaBilhetes' as any, { type: 'manual', message: m })
+      setError('bilhetesEntrega' as any, { type: 'manual', message: m })
     }
 
     return msgs
   }
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+  const onSubmit: SubmitHandler<FormValues> = async (formData) => {
     // validação manual
-    const errorsList = validateForm(data)
+    const errorsList = validateForm(formData)
     if (errorsList.length > 0) {
       const preview = errorsList.slice(0, 5).join(' \n ')
       toast('Preencha os dados', {
@@ -277,62 +294,77 @@ export default function CriarSorteioClient() {
 
     try {
       // montar FormData para enviar (multipart)
-      const fd = new FormData()
-      fd.append('titulo', data.titulo)
-      if (data.descricao) fd.append('descricao', data.descricao)
-      fd.append('short', data.short)
-      fd.append('data', data.data)
+      const form = new FormData()
+      form.append('titulo', formData.titulo)
+      if (formData.descricao) form.append('descricao', formData.descricao)
+      form.append('short', formData.short)
+      form.append('data', formData.data)
 
       const total =
-        typeof data.totalBilhetes === 'string'
-          ? Number(data.totalBilhetes)
-          : data.totalBilhetes
-      if (total !== undefined) fd.append('total_bilhetes', String(total))
+        typeof formData.totalBilhetes === 'string'
+          ? Number(formData.totalBilhetes)
+          : formData.totalBilhetes
+      if (total !== undefined) form.append('total_bilhetes', String(total))
 
-      fd.append('bilhetes_participante', String(data.bilhetesPorParticipante))
-      fd.append('entrega_bilhetes', String(Number(data.entregaBilhetes)))
-      if (data.regras) fd.append('regras', data.regras)
+      form.append(
+        'bilhetes_participante',
+        String(formData.bilhetesPorParticipante)
+      )
+      form.append('bilhetes_entrega', String(Number(formData.bilhetesEntrega)))
+      if (formData.regras) form.append('regras', formData.regras)
 
       // premios
       for (const key of ['premio1', 'premio2', 'premio3'] as const) {
-        const p = (data as any).premios[key] as Premio | undefined
-        fd.append(`${key}_status`, String(Boolean(p?.status)))
-        if (p?.titulo) fd.append(`${key}_titulo`, String(p.titulo))
-        if (p?.descricao) fd.append(`${key}_descricao`, String(p.descricao))
+        const p = (formData as any).premios[key] as Premio | undefined
+        form.append(`${key}_status`, String(Boolean(p?.status)))
+        if (p?.titulo) form.append(`${key}_titulo`, String(p.titulo))
+        if (p?.descricao) form.append(`${key}_descricao`, String(p.descricao))
         if (p?.foto && p.foto instanceof File) {
-          fd.append(`${key}_foto`, p.foto, p.foto.name)
+          form.append(`${key}_foto`, p.foto, p.foto.name)
         }
       }
 
-      const res = await fetch('/api/sorteios', { method: 'POST', body: fd })
-      const json = await res.json().catch(() => null)
+      const { data, status } = await api.post('/sorteio', form)
+      console.log('POST /api/sorteio', status, data)
 
-      if (!res.ok) {
-        if (json && json.errors && typeof json.errors === 'object') {
-          for (const k of Object.keys(json.errors)) {
-            const msgs = json.errors[k]
-            setError(k as any, {
-              type: 'server',
-              message: Array.isArray(msgs) ? msgs.join(', ') : String(msgs),
-            })
-          }
-          toast.error('Existem erros no formulário. Verifique os campos.')
-        } else {
-          const message = (json && json.message) || 'Erro ao criar sorteio'
-          toast.error(message)
-        }
+      if (status === 201) {
+        toast.success('Sorteio criado com sucesso!', {
+          description: 'O sorteio foi cadastrado e está ativo.',
+          action: { label: <X size={20} />, onClick: () => {} },
+        })
+        // router.push('/sorteios')
         return
       }
 
-      toast.success('Sorteio criado com sucesso!', {
-        description: 'O sorteio foi cadastrado e está ativo.',
-        action: { label: <X size={20} />, onClick: () => {} },
-      })
-      // router.push('/sorteios')
+      toast.error('Erro ao criar sorteio')
     } catch (err: any) {
       console.error(err)
-      toast.error(err?.message || 'Erro ao enviar formulário')
+      const res = err?.response?.data || {}
+      toast.error(res.error || 'Erro ao enviar formulário')
     }
+  }
+
+  const generateShort = async () => {
+    try {
+      const { data, status } = await api.get('/sorteio/short')
+      console.log('POST /api/sorteio/short', status, data)
+
+      setValue('short', data.short)
+
+      toast.success('Link gerado com sucesso!')
+    } catch (err: any) {
+      console.error(err)
+      const res = err?.response?.data || {}
+      toast.error(res.error || 'Erro ao enviar formulário')
+    }
+  }
+
+  const copiarShortLink = () => {
+    const text = getValues('short')
+    navigator.clipboard
+      .writeText(`${BASE_URL_SHORT}${text}`)
+      .then(() => toast.success('Link copiado com sucesso!'))
+      .catch(() => toast.error('Erro ao copiar link.'))
   }
 
   return (
@@ -403,12 +435,12 @@ export default function CriarSorteioClient() {
                   <InputGroupInput
                     id="short"
                     placeholder="SORTEIO10"
-                    className="pl-1! placeholder:text-neutral-500"
+                    className="pl-1! placeholder:text-neutral-500 text-primary"
                     {...register('short')}
                   />
                   <InputGroupAddon>
                     <InputGroupText className="text-neutral-200">
-                      https://sorteio.frontless.com.br/
+                      {BASE_URL_SHORT}
                     </InputGroupText>
                   </InputGroupAddon>
 
@@ -416,24 +448,26 @@ export default function CriarSorteioClient() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <InputGroupButton
-                          className="rounded-full"
-                          size="icon-xs"
+                          className="rounded-sm text-primary-foreground/50 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 gap-1.5"
+                          // size=""
+                          onClick={generateShort}
                         >
-                          <Info />
+                          <Shuffle /> Gerar
                         </InputGroupButton>
                       </TooltipTrigger>
                       <TooltipContent>Gerar link aleatório</TooltipContent>
                     </Tooltip>
                   </InputGroupAddon>
 
-                  <InputGroupAddon align="inline-end">
+                  <InputGroupAddon align="inline-end" className="ml-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <InputGroupButton
-                          className="rounded-full"
-                          size="icon-xs"
+                          className="rounded-sm text-primary-foreground/50 border  gap-1.5"
+                          // size=""
+                          onClick={copiarShortLink}
                         >
-                          <Info />
+                          <Copy /> Copiar
                         </InputGroupButton>
                       </TooltipTrigger>
                       <TooltipContent>Copiar link completo.</TooltipContent>
@@ -556,7 +590,7 @@ export default function CriarSorteioClient() {
 
                 <Controller
                   control={control}
-                  name="entregaBilhetes"
+                  name="bilhetesEntrega"
                   render={({ field }) => (
                     <RadioGroup
                       id="entrega-bilhetes"
@@ -602,9 +636,9 @@ export default function CriarSorteioClient() {
                     </RadioGroup>
                   )}
                 />
-                {errors.entregaBilhetes && (
+                {errors.bilhetesEntrega && (
                   <p className="text-red-400 text-sm font-light">
-                    {String(errors.entregaBilhetes.message)}
+                    {String(errors.bilhetesEntrega.message)}
                   </p>
                 )}
               </div>
@@ -656,22 +690,44 @@ export default function CriarSorteioClient() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="premio1-foto">Foto do 1º Prêmio</Label>
-                    <input
-                      id="premio1-foto"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        handleFileChange(
-                          'premios.premio1.foto' as any,
-                          e.target.files
-                        )
-                      }
-                    />
+                    <Item variant="outline">
+                      <ItemContent>
+                        <ItemTitle>Selecione a foto do 1° Premio</ItemTitle>
+                        <ItemDescription>
+                          <input
+                            ref={premio1FotoRef}
+                            id="premio1-foto"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleFileChange(
+                                'premios.premio1.foto' as any,
+                                e.target.files
+                              )
+                            }
+                          />
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (premio1FotoRef.current) {
+                              premio1FotoRef.current.click()
+                            }
+                          }}
+                        >
+                          Selecionar foto
+                        </Button>
+                      </ItemActions>
+                    </Item>
                     {previews.premio1 && (
                       <img
                         src={previews.premio1}
                         alt="preview premio1"
-                        className="mt-2 max-h-40 rounded object-contain border"
+                        className="mt-2 h-[250px] w-[250px] rounded object-cover border bg-center"
                       />
                     )}
                     {errors.premios?.premio1?.foto && (
@@ -715,22 +771,44 @@ export default function CriarSorteioClient() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="premio2-foto">Foto do 2º Prêmio</Label>
-                    <input
-                      id="premio2-foto"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        handleFileChange(
-                          'premios.premio2.foto' as any,
-                          e.target.files
-                        )
-                      }
-                    />
+                    <Item variant="outline">
+                      <ItemContent>
+                        <ItemTitle>Selecione a foto do 2° Premio</ItemTitle>
+                        <ItemDescription>
+                          <input
+                            ref={premio2FotoRef}
+                            id="premio2-foto"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleFileChange(
+                                'premios.premio2.foto' as any,
+                                e.target.files
+                              )
+                            }
+                          />
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (premio2FotoRef.current) {
+                              premio2FotoRef.current.click()
+                            }
+                          }}
+                        >
+                          Selecionar foto
+                        </Button>
+                      </ItemActions>
+                    </Item>
                     {previews.premio2 && (
                       <img
                         src={previews.premio2}
                         alt="preview premio2"
-                        className="mt-2 max-h-40 rounded object-contain border"
+                        className="mt-2 h-[250px] w-[250px] rounded object-cover border bg-center"
                       />
                     )}
                     {errors.premios?.premio2?.foto && (
@@ -774,7 +852,40 @@ export default function CriarSorteioClient() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="premio3-foto">Foto do 3º Prêmio</Label>
-                    <input
+                    <Item variant="outline">
+                      <ItemContent>
+                        <ItemTitle>Selecione a foto do 3° Premio</ItemTitle>
+                        <ItemDescription>
+                          <input
+                            ref={premio3FotoRef}
+                            id="premio3-foto"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleFileChange(
+                                'premios.premio3.foto' as any,
+                                e.target.files
+                              )
+                            }
+                          />
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (premio3FotoRef.current) {
+                              premio3FotoRef.current.click()
+                            }
+                          }}
+                        >
+                          Selecionar foto
+                        </Button>
+                      </ItemActions>
+                    </Item>
+                    {/* <input
                       id="premio3-foto"
                       type="file"
                       accept="image/*"
@@ -784,12 +895,12 @@ export default function CriarSorteioClient() {
                           e.target.files
                         )
                       }
-                    />
+                    /> */}
                     {previews.premio3 && (
                       <img
                         src={previews.premio3}
                         alt="preview premio3"
-                        className="mt-2 max-h-40 rounded object-contain border"
+                        className="mt-2 h-[250px] w-[250px] rounded object-cover border bg-center"
                       />
                     )}
                     {errors.premios?.premio3?.foto && (

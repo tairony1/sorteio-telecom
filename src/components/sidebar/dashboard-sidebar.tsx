@@ -22,7 +22,7 @@ import { UserDropdown } from './sidebar-user'
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Sorteios', url: '/sorteios', icon: Trophy },
-  { title: 'Criar Sorteio', url: '/criar-sorteio', icon: Plus },
+  { title: 'Criar Sorteio', url: '/sorteio/criar', icon: Plus },
   { title: 'Configurações', url: '/settings', icon: Settings },
 ]
 

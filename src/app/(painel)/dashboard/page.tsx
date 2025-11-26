@@ -71,7 +71,7 @@ export default function Dashboard() {
         <h2 className="text-2xl font-semibold text-foreground mb-2">
           Dashboard
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Visão geral do sistema de sorteios
         </p>
       </div>

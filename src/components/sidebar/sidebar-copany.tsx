@@ -13,8 +13,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { clearAuthCookie } from '@/lib/auth'
-import { useAuthStore } from '@/store/auth'
+// import { clearAuthCookie } from '@/lib/auth'
+// import { useAuthStore } from '@/store/auth'
 
 export function CompanyDropdown() {
   const router = useRouter()

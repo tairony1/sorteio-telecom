@@ -18,8 +18,13 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+			"performance": {
+				"noImgElement": "off"
+			},
 			"a11y": {
-				"useValidLang": "off"
+				"useValidLang": "off",
+				"noLabelWithoutControl": "off",
+				"useAltText": "off"
 			},
 			"suspicious": {
 				"noArrayIndexKey": "off"

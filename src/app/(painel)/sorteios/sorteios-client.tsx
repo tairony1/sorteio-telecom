@@ -86,10 +86,12 @@ export default function SorteiosClient() {
             <h2 className="text-2xl font-semibold text-foreground mb-2">
               Sorteios
             </h2>
-            <p className="text-muted-foreground">Carregando sorteios...</p>
+            <p className="text-sm text-muted-foreground">
+              Carregando sorteios...
+            </p>
           </div>
           <Button asChild className="gap-2">
-            <Link href="/criar-sorteio">
+            <Link href="/sorteio/criar">
               <Plus className="h-4 w-4" />
               Novo Sorteio
             </Link>
@@ -117,12 +119,12 @@ export default function SorteiosClient() {
           <h2 className="text-2xl font-semibold text-foreground mb-2">
             Sorteios
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Gerencie todos os sorteios cadastrados
           </p>
         </div>
         <Button asChild className="gap-2">
-          <Link href="/criar-sorteio">
+          <Link href="/sorteio/criar">
             <Plus className="h-4 w-4" />
             Novo Sorteio
           </Link>
