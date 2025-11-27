@@ -210,7 +210,7 @@ export default function SorteiosClient() {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Tooltip>
+                      {/* <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
@@ -223,35 +223,33 @@ export default function SorteiosClient() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Gerenciar</TooltipContent>
-                      </Tooltip>
+                      </Tooltip> */}
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              router.push(`/sorteio/editar/${sorteio.id}`)
-                            }
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Editar</TooltipContent>
-                      </Tooltip>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => router.push(`/sorteio/${sorteio.id}`)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
 
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(sorteio.id)}
-                          >
-                            <CircleX className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Cancelar</TooltipContent>
-                      </Tooltip>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          router.push(`/sorteio/editar/${sorteio.id}`)
+                        }
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(sorteio.id)}
+                      >
+                        <CircleX className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

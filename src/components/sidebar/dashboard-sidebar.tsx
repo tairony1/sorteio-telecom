@@ -40,7 +40,7 @@ export function DashboardSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>

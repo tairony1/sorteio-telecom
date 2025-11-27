@@ -10,6 +10,7 @@
   --font-sans: var(--font-inter);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
+  --background-login: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -49,6 +50,7 @@
   --radius-xl: calc(var(--radius) + 4px);  
   
   --color-background: var(--background);  
+  --color-background-login: var(--background-login);  
   --color-foreground: var(--foreground);  
   --color-card: var(--card);  
   --color-card-foreground: var(--card-foreground);  
@@ -82,7 +84,9 @@
 }
 
 .dark {
-  --background: oklch(0.141 0.005 285.823);
+  /* --background: oklch(0.141 0.005 285.823); */
+  --background: oklch(0.18 0 0);
+  --background-login: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
 
   --card: oklch(0.21 0.006 285.885);
@@ -170,5 +174,10 @@
 }
 
 button {
+  cursor: pointer;
+}
+
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"] {
   cursor: pointer;
 }
