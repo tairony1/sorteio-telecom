@@ -1,9 +1,10 @@
 'use client'
 
-import { Edit, Eye, Plus, Search, Trash2 } from 'lucide-react'
+import { CircleX, Edit, Eye, Plus, Search } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { api } from '@/services/api'
+
+interface SorteioListItem {
+  id: number
+  titulo: string
+  data: string
+  ticketsDisponiveis: number
+  ticketsResgatados: number
+  participantes: number
+  status: number
+  statusText: string
+}
 
 export default function SorteiosClient() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -31,41 +49,39 @@ export default function SorteiosClient() {
   const itemsPerPage = 20
   const router = useRouter()
 
-  const [mockSorteios, setMockSorteios] = useState<
-    | {
-        id: number
-        titulo: string
-        data: string
-        ticketsDisponiveis: number
-        ticketsResgatados: number
-        participantes: number
-      }[]
-    | null
-  >(null)
+  const [sorteios, setSorteios] = useState<SorteioListItem[] | null>(null)
 
+  // ===============================
+  // Carregar do backend
+  // ===============================
   useEffect(() => {
-    setMockSorteios(
-      Array.from({ length: 45 }, (_, i) => ({
-        id: i + 1,
-        titulo: `Sorteio ${i + 1}`,
-        data: `${String(i + 1).padStart(2, '0')}/01/2024`,
-        ticketsDisponiveis: 1000,
-        ticketsResgatados: Math.floor(Math.random() * 1000),
-        participantes: Math.floor(Math.random() * 500),
-      }))
-    )
+    const fetchData = async () => {
+      try {
+        const { data, status } = await api.get('/sorteios')
+        console.log('data', data)
+        if (status === 200 && data.sorteios) {
+          setSorteios(data.sorteios)
+          return
+        }
+        setSorteios([])
+      } catch (err) {
+        console.error('Erro carregando sorteios:', err)
+        setSorteios([])
+      }
+    }
+    fetchData()
   }, [])
 
   const filteredSorteios = useMemo(() => {
-    const source = mockSorteios ?? []
+    const source = sorteios ?? []
     return source.filter((sorteio) => {
-      const matchesId = sorteio.id.toString().includes(searchTerm)
-      const matchesTitulo = sorteio.titulo
+      const idMatch = sorteio.id.toString().includes(searchTerm)
+      const titleMatch = sorteio.titulo
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
-      return matchesId || matchesTitulo
+      return idMatch || titleMatch
     })
-  }, [searchTerm, mockSorteios])
+  }, [searchTerm, sorteios])
 
   const totalPages = Math.ceil(filteredSorteios.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -74,11 +90,11 @@ export default function SorteiosClient() {
 
   const handleDelete = (id: number) => {
     if (confirm('Tem certeza que deseja excluir este sorteio?')) {
-      console.log('Excluindo sorteio:', id)
+      console.log('Excluir:', id)
     }
   }
 
-  if (!mockSorteios) {
+  if (!sorteios) {
     return (
       <>
         <div className="flex justify-between items-center">
@@ -92,8 +108,7 @@ export default function SorteiosClient() {
           </div>
           <Button asChild className="gap-2">
             <Link href="/sorteio/criar">
-              <Plus className="h-4 w-4" />
-              Novo Sorteio
+              <Plus className="h-4 w-4" /> Novo Sorteio
             </Link>
           </Button>
         </div>
@@ -149,6 +164,7 @@ export default function SorteiosClient() {
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
           <Table>
             <TableHeader>
@@ -156,46 +172,86 @@ export default function SorteiosClient() {
                 <TableHead>Número</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Data do Sorteio</TableHead>
-                <TableHead>Tickets (Disp./Resg.)</TableHead>
+                <TableHead>Bilhetes</TableHead>
                 <TableHead>Participantes</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {currentSorteios.map((sorteio) => (
                 <TableRow key={sorteio.id}>
-                  <TableCell className="font-medium">#{sorteio.id}</TableCell>
+                  <TableCell className="font-medium">
+                    {String(sorteio.id).padStart(6, '0')}
+                  </TableCell>
                   <TableCell>{sorteio.titulo}</TableCell>
                   <TableCell>{sorteio.data}</TableCell>
                   <TableCell>
-                    <span className="text-muted-foreground">
-                      {sorteio.ticketsDisponiveis - sorteio.ticketsResgatados}
-                    </span>
-                    {' / '}
                     <span className="text-primary font-semibold">
                       {sorteio.ticketsResgatados}
                     </span>
+                    {' / '}
+                    <span className="text-muted-foreground">
+                      {sorteio.ticketsDisponiveis - sorteio.ticketsResgatados}
+                    </span>
                   </TableCell>
                   <TableCell>{sorteio.participantes}</TableCell>
+
+                  <TableCell>
+                    {sorteio.status === 1 ? (
+                      <Badge variant="default">{sorteio.statusText}</Badge>
+                    ) : sorteio.status === 2 ? (
+                      <Badge variant="secondary">{sorteio.statusText}</Badge>
+                    ) : (
+                      <Badge variant="destructive">{sorteio.statusText}</Badge>
+                    )}
+                  </TableCell>
+
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => router.push(`/sorteio/${sorteio.id}`)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(sorteio.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              router.push(`/sorteio/${sorteio.id}`)
+                            }
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Gerenciar</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              router.push(`/sorteio/editar/${sorteio.id}`)
+                            }
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Editar</TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(sorteio.id)}
+                          >
+                            <CircleX className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Cancelar</TooltipContent>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -203,6 +259,7 @@ export default function SorteiosClient() {
             </TableBody>
           </Table>
 
+          {/* Paginação */}
           <div className="mt-6">
             <Pagination>
               <PaginationContent>
