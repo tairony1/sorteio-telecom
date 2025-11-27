@@ -36,8 +36,8 @@ interface SorteioListItem {
   id: number
   titulo: string
   data: string
-  ticketsDisponiveis: number
-  ticketsResgatados: number
+  bilhetesDisponiveis: number
+  bilhetesResgatados: number
   participantes: number
   status: number
   statusText: string
@@ -189,11 +189,11 @@ export default function SorteiosClient() {
                   <TableCell>{sorteio.data}</TableCell>
                   <TableCell>
                     <span className="text-primary font-semibold">
-                      {sorteio.ticketsResgatados}
+                      {sorteio.bilhetesResgatados}
                     </span>
                     {' / '}
                     <span className="text-muted-foreground">
-                      {sorteio.ticketsDisponiveis - sorteio.ticketsResgatados}
+                      {sorteio.bilhetesDisponiveis - sorteio.bilhetesResgatados}
                     </span>
                   </TableCell>
                   <TableCell>{sorteio.participantes}</TableCell>

@@ -195,7 +195,9 @@ export default function SorteioClient() {
           </Button>
 
           <div>
-            <h2 className="text-2xl font-semibold">{sorteio.titulo || ''}</h2>
+            <h2 className="text-2xl font-semibold">
+              {sorteio.titulo || 'Titulo não informado'}
+            </h2>
             <p className="text-muted-foreground">
               Sorteio #{sorteio.id}
               <Badge
@@ -211,37 +213,41 @@ export default function SorteioClient() {
 
       {/* CARDS RESUMO */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="gap-4">
           <CardHeader className="flex flex-row justify-between pb-2">
             <CardTitle className="text-sm">Data do Sorteio</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl font-medium">
               {new Date(sorteio.data).toLocaleDateString('pt-BR')}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="gap-4">
           <CardHeader className="flex flex-row justify-between pb-2">
-            <CardTitle className="text-sm">Tickets Resgatados</CardTitle>
+            <CardTitle className="text-sm">
+              Bilhetes (Resgatados / Total)
+            </CardTitle>
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {sorteio.resgatados} / {sorteio.totalTickets}
+            <div className="text-xl font-medium">
+              {sorteio.bilhetes_resgatados} / {sorteio.total_bilhetes}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="gap-4">
           <CardHeader className="flex flex-row justify-between pb-2">
-            <CardTitle className="text-sm">Participantes</CardTitle>
+            <CardTitle className="text-sm">Participantes Ativos</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sorteio.participantes}</div>
+            <div className="text-2xl font-medium">
+              {sorteio.participantes_ativos}
+            </div>
           </CardContent>
         </Card>
       </div>
